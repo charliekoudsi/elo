@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
-const EloRank = require('elo-rank');
+const { EloCalculator } = require('toefungi-elo-calculator');
 const db = require('./models');
 
-const elo = new EloRank();
+const eloCalculator = new EloCalculator();
 
 exports.addPlayer = function(name) {
   db.Player.create({ name }).then(function() {
@@ -26,17 +26,27 @@ exports.getRankings = async function() {
 };
 
 exports.playGame = async function(result) {
-  const winner = await db.Player.findOne({ name: result.winner });
-  const loser = await db.Player.findOne({ name: result.loser });
-  const expectedScoreWinner = elo.getExpected(winner.score, loser.score);
-  const expectedScoreLoser = elo.getExpected(loser.score, winner.score);
+  const player1 = await db.Player.findOne({ name: result.playerOne });
+  const player2 = await db.Player.findOne({ name: result.playerTwo });
+  const scoreDiff1 = result.playerOneScore - result.playerTwoScore;
+  const scoreDiff2 = result.playerTwoScore - result.playerOneScore;
   await updateScore(
-    result.winner,
-    elo.updateRating(expectedScoreWinner, 1, winner.score)
+    result.playerOne,
+    await eloCalculator.calculateElo(
+      player1.score,
+      player2.score,
+      0.5 + 0.5 * Math.sign(scoreDiff1),
+      Math.abs(scoreDiff1)
+    )
   );
   await updateScore(
-    result.loser,
-    elo.updateRating(expectedScoreLoser, 0, loser.score)
+    result.playerTwo,
+    await eloCalculator.calculateElo(
+      player2.score,
+      player1.score,
+      0.5 + 0.5 * Math.sign(scoreDiff2),
+      Math.abs(scoreDiff2)
+    )
   );
   mongoose.connection.close();
 };

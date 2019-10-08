@@ -12,13 +12,23 @@ const {
 const questions = [
   {
     type: 'input',
-    name: 'winner',
-    message: "Winner's Name"
+    name: 'playerOne',
+    message: "First Player's Name"
   },
   {
     type: 'input',
-    name: 'loser',
-    message: "Loser's Name"
+    name: 'playerTwo',
+    message: "Second Player's Name"
+  },
+  {
+    type: 'input',
+    name: 'playerOneScore',
+    message: "First Player's Score"
+  },
+  {
+    type: 'input',
+    name: 'playerTwoScore',
+    message: "Second Player's Score"
   }
 ];
 
